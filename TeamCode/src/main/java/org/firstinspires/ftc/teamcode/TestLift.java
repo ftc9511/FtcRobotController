@@ -16,12 +16,14 @@ public class TestLift extends OpMode {
     private Servo clawLeft;
     private Servo clawRight;
     private boolean clawOpen = true;
-    private DcMotor left;
-    private DcMotor right;
+    private DcMotor frontLeft;
+    private DcMotor frontRight;
+    private DcMotor backLeft;
+    private DcMotor backRight;
     private int liftPosition = 0;
-    private final int liftZero = 0;
+    private int liftZero = 0;
     private Junction targetJunction = null;
-    private ElapsedTime runtime = new ElapsedTime();
+    private final ElapsedTime runtime = new ElapsedTime();
 
 
     @Override
@@ -29,27 +31,38 @@ public class TestLift extends OpMode {
         lift = hardwareMap.dcMotor.get("lift");
         lift.setDirection(DcMotorSimple.Direction.REVERSE);
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        liftZero = lift.getCurrentPosition();
         lift.setTargetPosition(lift.getCurrentPosition());
         lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         clawLeft = hardwareMap.servo.get("clawLeft");
         clawRight = hardwareMap.servo.get("clawRight");
 
-        left = hardwareMap.dcMotor.get("left");
-        right = hardwareMap.dcMotor.get("right");
-        right.setDirection(DcMotorSimple.Direction.REVERSE);
-        left.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        right.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeft = hardwareMap.dcMotor.get("fl");
+        frontRight = hardwareMap.dcMotor.get("fr");
+        backLeft = hardwareMap.dcMotor.get("bl");
+        backRight = hardwareMap.dcMotor.get("br");
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     @Override
     public void loop() {
-        double drive = -gamepad1.left_stick_y;
-        double turn = -gamepad1.right_stick_x;
-        double leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-        double rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
-        left.setPower(leftPower);
-        right.setPower(rightPower);
+        double y = -gamepad1.left_stick_y; // Remember, this is reversed!
+        double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+        double rx = gamepad1.right_stick_x;
+
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+
+        frontLeft.setPower((y + x + rx) / denominator);
+        backLeft.setPower((y - x + rx) / denominator);
+        frontRight.setPower((y - x - rx) / denominator);
+        backRight.setPower((y + x - rx) / denominator);
 
         //todo move to another class
         if (gamepad1.dpad_left) {
