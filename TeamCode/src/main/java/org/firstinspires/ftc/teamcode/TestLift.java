@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.max;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -98,7 +99,7 @@ public class TestLift extends OpMode {
         liftPosition = Range.clip(liftPosition, liftZero, liftZero + 4100);
 
         lift.setTargetPosition(liftPosition);
-        lift.setPower(abs(liftPosition - lift.getCurrentPosition()) / 100.0);
+        lift.setPower(max(0.2, abs(liftPosition - lift.getCurrentPosition()) / 500.0));
 
         telemetry.addData("liftCurrentPosition=", lift.getCurrentPosition());
         telemetry.addData("liftTargetPosition=", lift.getTargetPosition());
